@@ -1,0 +1,78 @@
+@import "bootstrap/bootstrap";
+
+#general-infos{
+    padding: 0 15px;
+    width: 100%;
+    z-index: 2;
+    span{
+        background-color: $gray-200;
+        border-radius: 10px;
+        display: inline-block;
+        margin: 10px;
+
+        padding: 0 5px;
+        font-size: 2em;
+    }
+}
+
+#imgContainer{
+    z-index: 1;
+    display: flex;
+}
+
+.event{
+    &.hidden{
+        display: none;
+    }
+    margin-top: 10px;
+    padding: 0;
+    @extend .col-lg-3;
+    @extend .col-sm-6;
+    @extend .col-md-6;
+    @extend .text-center;
+
+    img{
+        @extend .img-fluid;
+        border-right: solid 1px $gray-200;
+    }
+    .infos{
+        @extend .col-lg-12;
+        @extend .text-center;
+        border-width: 1px 1px 0 0;
+        border-style: solid;
+        padding: 0;
+        h2, .delete, {
+            position: absolute;
+            background-color: $gray-200;
+        }
+        h2{
+            top:0;
+            padding:0 3px;
+            margin:0;
+            left: 0;
+            line-height: 1em;
+            font-size: 2em;
+        }
+        .date{
+            margin-right: 10px;
+        }
+        .delete{
+            top: 0;
+            right: 0;
+            width : 2em;
+            height: 1em;
+            font-size: 2em;
+            cursor: pointer;
+            &:hover{
+                text-decoration: none;
+            }
+        }
+        span{
+            font-style: italic;
+        }
+        .progress-div{
+            background-color: $gray-200;
+        }
+    } 
+ }
+ 

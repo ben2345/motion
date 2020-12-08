@@ -1,0 +1,17 @@
+#!/bin/bash
+rm /var/www/motion/files/*.avi
+rm /var/www/motion/files/*.jpg
+wait
+
+for entry in /var/www/motion/files/*.mp4
+do
+  ffmpeg -i $entry -vf scale=712:-1 -r 10 -f image2pipe -vcodec ppm - | convert -delay 20 -loop 0 - gif:- | convert -layers Optimize - ${entry##*/}.gif
+done
+
+#rsync -avz --remove-source-files --ignore-existing --recursive -f '- /*/*/' /var/www/motion/files/* /var/www/motion/files/processed/$(date +"%Y-%m-%d_%H") -m
+
+#cd /var/www/motion/files/processed/$(date +"%Y-%m-%d_%H")
+
+#convert -delay 15 -loop 0 *.jpg $(date +"%Y-%m-%d_%H-%N").gif
+
+
