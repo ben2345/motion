@@ -1,6 +1,6 @@
 #!/bin/bash
 #cd /var/www/motion/files/gif/
-rclone copy /var/www/motion/files/gif/ gdrive:
+rclone copy /var/www/motion/files/events/ gdrive:
 
 
 

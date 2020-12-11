@@ -30,10 +30,15 @@ MOTION.loader = (function($){
          });
       },
       bindSkuRequest: function (span) {
-         setInterval(function () {
-            helper.ajaxRequest('getSku', $(span).attr('id'));
-         }, $(span).data('delay'));
-      }
+         if ($(span).data('delay')) {
+            setInterval(function () {
+               helper.ajaxRequest('getSku', $(span).attr('id'));
+            }, $(span).data('delay'));
+            $(span).on('click', function () {
+               helper.ajaxRequest('getSku', $(span).attr('id'));
+            });
+         }
+      },
    };
    
 	var eventsLoader = {
@@ -94,12 +99,15 @@ MOTION.loader = (function($){
           if (skuBlock.length) {
              skuBlock.html(response[Object.keys(response)[0]]);
           }
-            
-         if (response.gif_files_infos) {
+          if (response.last_update_time) {
+            $lastUpdateTime.html(response.last_update_time);
+          }
+         if (response.event_files_infos) {
 
             $("html, body").animate({ scrollTop: 0 }, "slow");
-
-             $.each(response.gif_files_infos, function (key, value) {
+            $nbFiles.html(response.nb_files);
+            
+            $.each(response.event_files_infos, function (key, value) {
                var image = new Image();
                image.src = value.url;
                 
@@ -127,7 +135,7 @@ MOTION.loader = (function($){
                   "class": "progress-div",
                }).append(progressionTimer).append(totalTime).append(progress);
 
-               helper.animateProgressBar(progressBar, value.fileduration, progressionTimer)
+               helper.animateProgressBar(progressBar, value.fileduration, progressionTimer);
       
                var deleteLink = $('<a>', { 'class': 'delete', 'data-path': value.path }).text('🗑');
                deleteLink.on('click', function () {
@@ -140,7 +148,6 @@ MOTION.loader = (function($){
                divInfos.append(progressDiv);
                divInfos.append(deleteLink);
                event.append(divInfos);
-           
                $imgContainer.prepend(event);
                
                image.onload = function () {

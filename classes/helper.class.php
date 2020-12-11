@@ -9,7 +9,7 @@ Class Helper{
     {
         $this->id = $_REQUEST['id'];
         $this->action = $_REQUEST['action'];
-        $this->filepath = dirname(dirname(__FILE__)) . '/files/gif';
+        $this->filepath = dirname(dirname(__FILE__)) . '/files/events';
     }
 
     public function getSkuFields(){
@@ -24,11 +24,11 @@ Class Helper{
         switch ($sku) {
             case 'lastUpdateTime':
                 $value = '0'; // todo
-                $delay = 10000; // milisecondes
+                $delay = false; // milisecondes
             break;
             case 'nbFiles':
                 $value = '0'; // todo
-                $delay = 11000;
+                $delay = false;
             break;
             case 'temperatureCpu':
                 $value = 'Cpu : ' . exec('echo $((`cat /sys/class/thermal/thermal_zone0/temp|cut -c1-2`)).$((`cat /sys/class/thermal/thermal_zone0/temp|cut -c4-5`))') . '°';
@@ -39,7 +39,7 @@ Class Helper{
                 $delay = 13000;
             break;
             case 'loadCpu':
-                $value = 'Cpu Load : ' . exec("cut -f 1 -d ' ' /proc/loadavg") . '%';
+                $value = 'Cpu Load : ' . exec("cut -f 1 -d ' ' /proc/loadavg") * 100 . '%';
                 $delay = 14000;
             break;
             case 'bitcoinRate':
@@ -66,39 +66,40 @@ Class Helper{
             if ($folders = glob($this->filepath . '/*', GLOB_ONLYDIR)) {
 
             foreach ($folders as $folder) {
-        
-                $gif_files_path = glob($folder . '/*.gif');
+         
+                $event_files_path = glob($folder . '/*.gif');
         
                 // fichiers du + récent au + vieux
-                usort($gif_files_path, function ($a, $b) {
-                return filemtime($a) - filemtime($b) ;
+                usort($event_files_path, function ($a, $b) {
+                    return filemtime($a) - filemtime($b) ;
                 });
         
-                foreach ($gif_files_path as $gif_file_path) {
+                foreach ($event_files_path as $event_file_path) {
             
-                $filemtime = filemtime($gif_file_path);
+                $filemtime = filemtime($event_file_path);
                 if (isset($_SESSION['lastMTime'])) {
                     if ($_SESSION['lastMTime'] >= $filemtime) {
                     continue;
                     }
                 }
-                //todo heure format
-                $gif_files_infos[] = array(
+                $event_files_infos[] = array(
                     'date' => date('d/m/Y', $filemtime),
-                    'heure' => str_replace('-', ':', reset(explode('.', pathinfo($gif_file_path)['basename']))),
+                    'heure' => str_replace('-', ':', reset(explode('.', pathinfo($event_file_path)['basename']))),
                     'filemtime' => $filemtime,
-                    'fileduration' => $this->getGIFDuration($gif_file_path),
-                    'filesize' => $this->human_filesize($gif_file_path),
-                    'url' => str_replace(dirname(__DIR__), 'http://' . $_SERVER['HTTP_HOST'] . '/motion', $gif_file_path),
-                    'path' => $gif_file_path,
+                    'fileduration' => $this->getGIFDuration($event_file_path),
+                    'filesize' => $this->human_filesize($event_file_path),
+                    'url' => str_replace(dirname(__DIR__), 'http://' . $_SERVER['HTTP_HOST'] . '/motion', $event_file_path),
+                    'path' => $event_file_path,
                 );
                 }
         
-                if (isset($gif_files_infos)) {
-                $_SESSION['lastMTime'] = end($gif_files_infos)['filemtime'];
-                $data['gif_files_infos'] = $gif_files_infos;
-                $data['nb_files'] = count($gif_files_path) . ' Fichiers';
+                if (isset($event_files_infos)) {
+                $_SESSION['lastMTime'] = end($event_files_infos)['filemtime'];
+                $data['event_files_infos'] = $event_files_infos;
+                $data['nb_files'] = count($event_files_path) . ' Fichiers';
                 $data['last_update_time'] = 'Update : ' . date('H:i');
+                exec("sudo python /var/www/motion/scripts/bot.py");
+
                 }
             }
             return $data;
