@@ -1,1 +1,4 @@
 files/events/*
+files/timelapse/*
+files/*.mpg
+files/*.flv
