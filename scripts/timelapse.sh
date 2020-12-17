@@ -1,19 +1,39 @@
-
 #!/bin/bash
 
-newFilePath=/var/www/motion/files/`TZ=GMT+24 date +%Y-%m-%d`-timelapse.mpg;
-timelapseFilePath=/var/www/motion/files/timelapse/timelapse.flv
-timelapseFilePathTemp=/var/www/motion/files/timelapse/timelapse-temp.flv
-timelapseFilePathNew=/var/www/motion/files/timelapse/timelapse-new.flv
+timelapseTempDayly=all_time/timelapse-temp-dayly.flv
 
-if test -f "$timelapseFilePath"; then
-    if test -f "$newFilePath"; then
-        ffmpeg -i $newFilePath -filter:v "crop=470:920:0:170" $timelapseFilePathNew -y
-    fi
-    cp -v $timelapseFilePath $timelapseFilePathTemp
-    if test -f "$timelapseFilePath"; then
-        ffmpeg -i "concat:$timelapseFilePathTemp|$timelapseFilePathNew" -c copy $timelapseFilePath -y
-    fi
-fi
+timelapseNew=all_time/timelapse-new.flv
 
-rm $timelapseFilePathTemp $timelapseFilePathNew
+timelapseFinal=all_time/timelapse.flv
+
+# copy & convert files
+cd /var/www/motion/files/
+for file in *.mpg; do
+   hour=`echo "$file" | cut -c1-2`
+   if [ "$hour" -ge 7 ] && [ "$hour" -le 17 ]; then
+      ffmpeg -i $file -filter:v "crop=470:920:0:170" /var/www/motion/files/timelapse/$hour.flv -y
+   else
+	 rm $file     
+   fi
+done
+
+cd timelapse/
+
+# merge files to dayly Temp timelapse
+flvFiles=*.flv
+for file in $flvFiles; do
+    echo "file '$file'" >> timelapses.txt;
+done
+# timelapse du jour
+ffmpeg -f concat -safe 0 -i timelapses.txt -c copy $timelapseTempDayly
+
+# timelapse du jour + ancien timeLapse => timelapseNew
+ffmpeg -i "concat:$timelapseFinal|$timelapseTempDayly" -c copy $timelapseNew -y
+
+# copie de timelapseNew a la place de timeLapseFinal
+rm $timelapseFinal
+cp $timelapseNew $timelapseFinal
+
+# clean
+rm timelapses.txt $timelapseNew $timelapseTempDayly *.flv
+ 

@@ -7,8 +7,8 @@ Class Helper{
 
     function __construct()
     {
-        $this->id = $_REQUEST['id'];
-        $this->action = $_REQUEST['action'];
+        $this->id = isset($_REQUEST['id']) ? $_REQUEST['id'] : '';
+        $this->action = isset($_REQUEST['action']) ? $_REQUEST['action'] : '';
         $this->filepath = dirname(dirname(__FILE__)) . '/files/events';
     }
 
@@ -21,6 +21,8 @@ Class Helper{
   
     public function getSku($sku){
         $value = '0';
+        $delay = false;
+
         switch ($sku) {
             case 'lastUpdateTime':
                 $value = '0'; // todo
@@ -28,23 +30,22 @@ Class Helper{
             break;
             case 'nbFiles':
                 $value = '0'; // todo
-                $delay = false;
             break;
             case 'temperatureCpu':
                 $value = 'Cpu : ' . exec('echo $((`cat /sys/class/thermal/thermal_zone0/temp|cut -c1-2`)).$((`cat /sys/class/thermal/thermal_zone0/temp|cut -c4-5`))') . '°';
-                $delay = 12000;
+                $delay = 120000;
             break;
             case 'temperatureGpu':
                 $value = 'Gpu : ' . exec('sudo vcgencmd measure_temp | cut -c6-9') . '°';
-                $delay = 13000;
+                $delay = 120000;
             break;
             case 'loadCpu':
                 $value = 'Cpu Load : ' . exec("cut -f 1 -d ' ' /proc/loadavg") * 100 . '%';
-                $delay = 14000;
+                $delay = 120000;
             break;
             case 'bitcoinRate':
                 $value = 'Bitcoin : ' .json_decode(file_get_contents("https://bitpay.com/api/rates/BTC/EUR"))->rate.' €';
-                $delay = 60000;
+                $delay = 120000;
             break;
         }
         $this->skus[$sku] = ['value' => $value, 'delay' => $delay];
@@ -73,7 +74,7 @@ Class Helper{
                 usort($event_files_path, function ($a, $b) {
                     return filemtime($a) - filemtime($b) ;
                 });
-        
+         
                 foreach ($event_files_path as $event_file_path) {
             
                 $filemtime = filemtime($event_file_path);
@@ -82,9 +83,11 @@ Class Helper{
                     continue;
                     }
                 }
+                $pop = explode('.', pathinfo($event_file_path)['basename']);
+                $hour = reset($pop);
                 $event_files_infos[] = array(
                     'date' => date('d/m/Y', $filemtime),
-                    'heure' => str_replace('-', ':', reset(explode('.', pathinfo($event_file_path)['basename']))),
+                    'heure' => str_replace('-', ':', $hour),
                     'filemtime' => $filemtime,
                     'fileduration' => $this->getGIFDuration($event_file_path),
                     'filesize' => $this->human_filesize($event_file_path),
@@ -102,7 +105,7 @@ Class Helper{
 
                 }
             }
-            return $data;
+            return isset($data) ? $data : '';
             }
     }
 
