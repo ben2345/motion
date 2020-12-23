@@ -101,8 +101,7 @@ Class Helper{
                 $data['event_files_infos'] = $event_files_infos;
                 $data['nb_files'] = count($event_files_path) . ' Fichiers';
                 $data['last_update_time'] = 'Update : ' . date('H:i');
-               // exec("sudo python /var/www/motion/scripts/bot.py");
-
+                exec("sudo python /var/www/motion/scripts/bot.py");
                 }
             }
             return isset($data) ? $data : '';
