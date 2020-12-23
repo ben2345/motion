@@ -23,7 +23,25 @@ class PCA9685:
   __ALLLED_ON_L        = 0xFA
   __ALLLED_ON_H        = 0xFB
   __ALLLED_OFF_L       = 0xFC
-  __ALLLED_OFF_H       = 0xFD
+  __ALLLED_OFF_H = 0xFD
+  
+  ROTATION_SERVO_ID    = 0
+  ROTATION_POS_BASE    = 1500
+  ROTATION_POS_CURRENT = 1500
+
+  LIFT_SERVO_ID    = 5
+  LIFT_POS_BASE    = 1400
+  LIFT_POS_CURRENT = 1400
+
+  DEPLOY_SERVO_ID    = 15
+  DEPLOY_POS_BASE    = 2400
+  DEPLOY_POS_CURRENT = 2400
+
+  PINCH_SERVO_ID    = 10
+  PINCH_POS_BASE    = 2500
+  PINCH_POS_CURRENT = 2500
+
+
 
   def __init__(self, address=0x40, debug=False):
     self.bus = smbus.SMBus(1)
@@ -81,17 +99,120 @@ class PCA9685:
     pulse = pulse*4096/20000        #PWM frequency is 50HZ,the period is 20000us
     self.setPWM(channel, 0, int(pulse))
 
+  def reset(self):
+    "reset position"
+    time.sleep(1)
+    # a droite
+    self.setServoPulse(self.ROTATION_SERVO_ID, self.ROTATION_POS_BASE)
+    self.ROTATION_POS_CURRENT = self.ROTATION_POS_BASE
+
+    # en haut
+    self.setServoPulse(self.LIFT_SERVO_ID, self.LIFT_POS_BASE)
+    self.LIFT_POS_CURRENT = self.LIFT_POS_BASE
+
+    # plie
+    self.setServoPulse(self.DEPLOY_SERVO_ID, self.DEPLOY_POS_BASE)
+    self.DEPLOY_POS_CURRENT = self.DEPLOY_POS_BASE
+
+    # ouvert
+    self.setServoPulse(self.PINCH_SERVO_ID, self.PINCH_POS_BASE)
+    self.PINCH_POS_CURRENT = self.PINCH_POS_BASE
+
+  def rotate(self, newPos):
+    "smooth move position"
+    movementStep = 10
+    if (self.ROTATION_POS_CURRENT > newPos):
+      movementStep = -10
+
+    for i in range(self.ROTATION_POS_CURRENT, newPos, movementStep):  
+      pwm.setServoPulse(self.ROTATION_SERVO_ID,i)   
+      time.sleep(0.01)
+      self.ROTATION_POS_CURRENT = i
+
+    time.sleep(0.5)
+
+
+  def lift(self, newPos):
+    "smooth move position"
+    movementStep = 10
+    if (self.LIFT_POS_CURRENT > newPos):
+      movementStep = -10
+
+    for i in range(self.LIFT_POS_CURRENT, newPos, movementStep):  
+      pwm.setServoPulse(self.LIFT_SERVO_ID,i)   
+      time.sleep(0.01)
+      self.LIFT_POS_CURRENT = i
+
+    time.sleep(0.5)
+
+
+  def deploy(self, newPos):
+    "smooth move position"
+    movementStep = 10
+    if (self.DEPLOY_POS_CURRENT > newPos):
+      movementStep = -10
+
+    for i in range(self.DEPLOY_POS_CURRENT, newPos, movementStep):  
+      pwm.setServoPulse(self.DEPLOY_SERVO_ID,i)   
+      time.sleep(0.01)
+      self.DEPLOY_POS_CURRENT = i
+
+    time.sleep(0.5)
+
+  def pinch(self, newPos):
+    "smooth move position"
+    movementStep = 10
+    if (self.PINCH_POS_CURRENT > newPos):
+      movementStep = -10
+
+    for i in range(self.PINCH_POS_CURRENT, newPos, movementStep):  
+      pwm.setServoPulse(self.PINCH_SERVO_ID,i)   
+      time.sleep(0.01)
+      self.PINCH_POS_CURRENT = i
+
+    time.sleep(0.5)
+
+
+
+
+
 if __name__=='__main__':
  
   pwm = PCA9685(0x40, debug=False)
   pwm.setPWMFreq(50)
 
-  pwm.setServoPulse(10, 1600)
-  time.sleep(0.3)
-  pwm.setServoPulse(10, 2000)
-  time.sleep(0.3)
-  pwm.setServoPulse(10, 1600)
-  time.sleep(0.3)
-  pwm.setServoPulse(10, 2000)
-  time.sleep(0.3)
+ 
+# hauteur id:5 / profondeur id:15 90deg
+# max 2400
+# min 1400
 
+# rotation id:0 / grip id:10 180deg
+# max 2500
+# min 500
+ 
+#reset
+pwm.reset()   
+##############
+ 
+pwm.rotate(600)
+time.sleep(0.5)
+pwm.rotate(1500)
+
+# pwm.pinch(2500)
+# pwm.lift(2000)
+# pwm.deploy(1900)
+# pwm.pinch(500)
+# pwm.deploy(2400)
+# pwm.lift(1400)
+
+# pwm.rotate(500)
+# pwm.lift(2000)
+# pwm.deploy(1900)
+# pwm.pinch(2500)
+# pwm.deploy(2400)
+# pwm.lift(1400)
+# pwm.rotate(1500)
+
+##############
+#reset 
+pwm.reset()

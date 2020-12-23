@@ -19,12 +19,36 @@ $helper = new Helper();
     <?php 
     $helper->getSkuFields(); 
     ?>
+    <span id="timelapse">Timelapse</span>
 </div>
+
+
+
+
+
 
 
 <div class="container-fluid">
     <div id="imgContainer" class="row"></div>
+
+
+    <div class="embed-responsive">
+        <video controls width="700">
+            <source src="" type="video/mp4">
+        </video>
+    </div>
+
+
+
+    <div class="embed-responsive embed-responsive-16by9">
+  <iframe class="embed-responsive-item" src="http://82.65.203.4/motion/files/timelapse/timelapse/timelapse.mp4" allowfullscreen></iframe>
 </div>
+
+    
+
+</div>
+
+
 <script src="js/js.js?v=<?php echo rand(0,999999) ?>"></script>
 </body>
 </html>
