@@ -2,7 +2,7 @@
 Class Helper{
     public $id;
     public $action;
-    public $skus = ['lastUpdateTime','nbFiles','temperatureCpu','temperatureGpu','loadCpu','bitcoinRate'];
+    public $skus = ['lastUpdateTime','nbFiles','temperatureCpu','temperatureGpu','loadCpu','bitcoinRate','temperatureBalcon','temperatureSalon','temperatureSalleDeBain'];
     public $filepath;
 
     function __construct()
@@ -23,6 +23,8 @@ Class Helper{
         $value = '0';
         $delay = false;
 
+        $conn = mysqli_connect('localhost','ben','newton22','temperatures');
+
         switch ($sku) {
             case 'lastUpdateTime':
                 $value = '0'; // todo
@@ -41,11 +43,29 @@ Class Helper{
             break;
             case 'loadCpu':
                 $value = 'Cpu Load : ' . exec("cut -f 1 -d ' ' /proc/loadavg") * 100 . '%';
-                $delay = 120000;
+                $delay = 110000;
             break;
             case 'bitcoinRate':
                 $value = 'Bitcoin : ' .json_decode(file_get_contents("https://bitpay.com/api/rates/BTC/EUR"))->rate.' €';
                 $delay = 120000;
+            break;
+            case 'temperatureBalcon':
+                $result = $conn->query('SELECT * FROM `temperatures_log` WHERE id_sensor = 1 ORDER BY `date` DESC LIMIT 1');
+                $temperature_data = $result->fetch_row();
+                $value = 'Balcon : '.$temperature_data[2].'° | '.$temperature_data[3].' %';
+                $delay = 90000;
+            break;
+            case 'temperatureSalon':
+                $result = $conn->query('SELECT * FROM `temperatures_log` WHERE id_sensor = 2 ORDER BY `date` DESC LIMIT 1');
+                $temperature_data = $result->fetch_row();
+                $value = 'Salon : '.$temperature_data[2].'° | '.$temperature_data[3].' %';
+                $delay = 115000;
+            break;
+            case 'temperatureSalleDeBain':
+                $result = $conn->query('SELECT * FROM `temperatures_log` WHERE id_sensor = 3 ORDER BY `date` DESC LIMIT 1');
+                $temperature_data = $result->fetch_row();
+                $value = 'Salle de bain : '.$temperature_data[2].'° | '.$temperature_data[3].' %';
+                $delay = 110000;
             break;
         }
         $this->skus[$sku] = ['value' => $value, 'delay' => $delay];
@@ -101,7 +121,7 @@ Class Helper{
                 $data['event_files_infos'] = $event_files_infos;
                 $data['nb_files'] = count($event_files_path) . ' Fichiers';
                 $data['last_update_time'] = 'Update : ' . date('H:i');
-                exec("sudo python /var/www/motion/scripts/bot.py");
+                //exec("sudo python /var/www/motion/scripts/bot.py");
                 }
             }
             return isset($data) ? $data : '';
@@ -130,6 +150,77 @@ Class Helper{
         // delays converted to seconds
         $total_delay /= 100;
         return $total_delay;
+    }
+
+
+    public function getSensorData($sensor_id){
+        $attempt = 0;
+        $max_attemps = 5;
+        $values = false;
+        while(!$values){
+            $attempt++;
+            if($attempt <= $max_attemps){
+                $values = exec("sudo sh /var/www/motion/scripts/thermometre_".$sensor_id.".sh");
+            }else{
+                break;
+            }
+        }
+        return $values;
+    }
+
+    public function logSensorData($values_ok){
+        $conn = mysqli_connect('localhost','ben','newton22','temperatures');
+        foreach($values_ok as $thermometer_id => $value){
+            list($temperature, $humidity) = explode('|',$value);
+            if($temperature !== '' && $humidity !== ''){
+                $req = "INSERT INTO `temperatures_log` (`id_sensor`, `temperature`, `humidity`) VALUES ('".$thermometer_id."', '".$temperature."', '".$humidity."');";
+                $conn->query($req);
+            }
+        }
+    }
+
+
+    public function getJSONTemperatures(){
+
+        $conn = mysqli_connect('localhost','ben','newton22','temperatures');
+        $result = $conn->query('SELECT * FROM `temperatures_log` ORDER BY `date`');
+        $datas = $result->fetch_all(MYSQLI_ASSOC);
+
+        $sensor_names = [
+            "1" => "Balcon",
+            "2" => "Salon",
+            "3" => "Salle de bain"
+        ];
+
+        $sensor_conf = [
+            "1" => ["Balcon", "#222"],
+            "2" => ["Salon", "#000"],
+            "3" => ["Salle de bain", "#111"]
+        ];
+
+        foreach ($datas as $data){
+            $date = DateTime::createFromFormat('Y-m-d H:i:s', $data['date']);
+            $mts = $date->getTimestamp().'000'; // millisecond timestamp
+            $tempData['Température '.$sensor_conf[$data['id_sensor']][0]][] = ['x' => (float)$mts, 'y' => (float)$data['temperature']];
+            $tempData['Humidité '.$sensor_conf[$data['id_sensor']][0]][] = ['x' => (float)$mts, 'y' => (float)$data['humidity']];
+            //$tempData['Humidité '.$sensor_names[$data['id_sensor']]][] = [(float)$mts, (float)$data['humidity'], '#451244'];
+        }
+
+        foreach ($tempData as $key => $values){
+
+            foreach($sensor_conf as $conf){
+                if ('Température '.$conf[0] == $key){
+                    $color = $conf[1];
+                }
+            }
+
+         
+
+           
+            
+            $tempData2[] = array("key" => $key, "values" => $values, "color" => $color);
+        }
+        echo json_encode($tempData2);
     }
 
 }
