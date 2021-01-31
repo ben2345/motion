@@ -4,14 +4,13 @@ MOTION.loader = (function($){
 	"use strict";
     var link;
     
-    var $imgContainer, $loader, $skuContainer, $temperatureCpu, $temperatureGpu, $loadCpu, $nbFiles, $lastUpdateTime, $bitcoinRate, ajaxRequest, $;
+    var $imgContainer, $loader, $skuContainer, $temperatureCpu, $temperatureGpu, $loadCpu, $nbFiles, $lastUpdateTime, $bitcoinRate, ajaxRequest, $temperatureBalcon, $temperatureSalon, $temperatureSalleDeBain, $;
  
 	// Main init
 	var _init = function($jq){
         $ = $jq;
         $imgContainer = $('#imgContainer');
         $skuContainer = $('#general-infos');
-      
         $loader = $('#loader');
         $temperatureCpu = $('#temperatureCpu');
         $temperatureGpu = $('#temperatureGpu');
@@ -19,6 +18,9 @@ MOTION.loader = (function($){
         $nbFiles = $('#nbFiles');
         $lastUpdateTime = $('#lastUpdateTime');
         $bitcoinRate = $('#bitcoinRate');
+        $temperatureBalcon = $('#temperatureBalcon');
+        $temperatureSalon = $('#temperatureSalon');
+        $temperatureSalleDeBain = $('#temperatureSalleDeBain');
         eventsLoader.init();
         skuLoader.init();
    };

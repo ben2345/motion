@@ -25,23 +25,22 @@ class PCA9685:
   __ALLLED_OFF_L       = 0xFC
   __ALLLED_OFF_H = 0xFD
   
-  ROTATION_SERVO_ID    = 0
-  ROTATION_POS_BASE    = 1500
-  ROTATION_POS_CURRENT = 1500
+  MOVE_SERVO_ID           = 15
+  MOVE_SPEED_NEUTRAL      = 780
+  MOVE_SPEED_CURRENT      = 780
+  MOVE_SPEED_MAX_FORWARD  = 870
+  MOVE_SPEED_MAX_BACKWARD = 870
+
 
   LIFT_SERVO_ID    = 5
   LIFT_POS_BASE    = 1400
   LIFT_POS_CURRENT = 1400
-
   DEPLOY_SERVO_ID    = 15
   DEPLOY_POS_BASE    = 2400
   DEPLOY_POS_CURRENT = 2400
-
   PINCH_SERVO_ID    = 10
   PINCH_POS_BASE    = 2500
   PINCH_POS_CURRENT = 2500
-
-
 
   def __init__(self, address=0x40, debug=False):
     self.bus = smbus.SMBus(1)
@@ -105,31 +104,53 @@ class PCA9685:
     # a droite
     self.setServoPulse(self.ROTATION_SERVO_ID, self.ROTATION_POS_BASE)
     self.ROTATION_POS_CURRENT = self.ROTATION_POS_BASE
-
     # en haut
     self.setServoPulse(self.LIFT_SERVO_ID, self.LIFT_POS_BASE)
     self.LIFT_POS_CURRENT = self.LIFT_POS_BASE
-
     # plie
     self.setServoPulse(self.DEPLOY_SERVO_ID, self.DEPLOY_POS_BASE)
     self.DEPLOY_POS_CURRENT = self.DEPLOY_POS_BASE
-
     # ouvert
     self.setServoPulse(self.PINCH_SERVO_ID, self.PINCH_POS_BASE)
     self.PINCH_POS_CURRENT = self.PINCH_POS_BASE
 
-  def rotate(self, newPos):
-    "smooth move position"
-    movementStep = 10
-    if (self.ROTATION_POS_CURRENT > newPos):
-      movementStep = -10
+  def moveForward(self, speed):
+    "move forward"
+    if speed > self.MOVE_SPEED_MAX_FORWARD:
+      speed = self.MOVE_SPEED_MAX_FORWARD
 
-    for i in range(self.ROTATION_POS_CURRENT, newPos, movementStep):  
-      pwm.setServoPulse(self.ROTATION_SERVO_ID,i)   
-      time.sleep(0.01)
-      self.ROTATION_POS_CURRENT = i
+    self.MOVE_SPEED_CURRENT = speed
+    print(speed)
+    pwm.setServoPulse(self.MOVE_SERVO_ID, speed)
 
-    time.sleep(0.5)
+  def moveBackward(self, speed):
+    "move backward"
+    if speed > self.MOVE_SPEED_MAX_BACKWARD:
+      speed = self.MOVE_SPEED_MAX_BACKWARD
+
+    self.MOVE_SPEED_CURRENT = speed
+    print(speed)
+    pwm.setServoPulse(self.MOVE_SERVO_ID, speed)
+
+
+  def moveStop(self):
+    "stop movement"
+    pwm.setServoPulse(self.MOVE_SERVO_ID, self.MOVE_SPEED_NEUTRAL)   
+     
+ 
+
+  # def rotate(self, newPos):
+  #   "smooth move position"
+  #   movementStep = 10
+  #   if (self.ROTATION_POS_CURRENT > newPos):
+  #     movementStep = -10
+
+  #   for i in range(self.ROTATION_POS_CURRENT, newPos, movementStep):  
+  #     pwm.setServoPulse(self.ROTATION_SERVO_ID,i)   
+  #     time.sleep(0.01)
+  #     self.ROTATION_POS_CURRENT = i
+
+  #   time.sleep(0.5)
 
 
   def lift(self, newPos):
@@ -173,16 +194,13 @@ class PCA9685:
     time.sleep(0.5)
 
 
-
-
-
+ 
 if __name__=='__main__':
  
   pwm = PCA9685(0x40, debug=False)
   pwm.setPWMFreq(50)
 
- 
-# hauteur id:5 / profondeur id:15 90deg
+# SPEED id:0
 # max 2400
 # min 1400
 
@@ -191,28 +209,65 @@ if __name__=='__main__':
 # min 500
  
 #reset
-pwm.reset()   
+# pwm.reset()   
 ##############
- 
-pwm.rotate(600)
-time.sleep(0.5)
-pwm.rotate(1500)
 
-# pwm.pinch(2500)
-# pwm.lift(2000)
-# pwm.deploy(1900)
-# pwm.pinch(500)
-# pwm.deploy(2400)
-# pwm.lift(1400)
 
-# pwm.rotate(500)
-# pwm.lift(2000)
-# pwm.deploy(1900)
-# pwm.pinch(2500)
-# pwm.deploy(2400)
-# pwm.lift(1400)
-# pwm.rotate(1500)
+
+# pwm.moveForward(880)
+
+pwm.setServoPulse(0, 2500)
+time.sleep(1)
+
+pwm.setServoPulse(0, 500)
+time.sleep(1)
+
+pwm.setServoPulse(0, 0)
+time.sleep(1)
+
+
+
+
+# pwm.setServoPulse(0, 1200)
+# time.sleep(1)
+
+# pwm.setServoPulse(0, 1700)
+# time.sleep(1)
+
+# pwm.setServoPulse(0, 2000)
+# time.sleep(1)
+
+
+
+
+# pwm.moveForward(880)
+# time.sleep(1)
+# pwm.moveStop()
+# time.sleep(1)
+
+# pwm.moveBackward(860)
+# time.sleep(1)
+# pwm.moveStop()
+# time.sleep(1)
+
+# pwm.moveBackward(850)
+# time.sleep(1)
+# pwm.moveStop()
+# time.sleep(1)
+
+
+# pwm.moveBackward(790)
+# time.sleep(1)
+# pwm.moveStop()
+# time.sleep(1)
+
+
+# pwm.moveBackward(800)
+# time.sleep(1)
+# pwm.moveStop()
+# time.sleep(1)
+
 
 ##############
 #reset 
-pwm.reset()
+# pwm.reset()

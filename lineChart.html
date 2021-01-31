@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+ 
+
+    <link href="css/nv.d3.css" rel="stylesheet" type="text/css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js" charset="utf-8"></script>
+    <script src="js/nv.d3.min.js"></script>
+
+    <style>
+        text {
+            font: 12px sans-serif;
+        }
+        svg {
+            display: block;
+        }
+        html, body, #chart1, svg {
+            margin: 0px;
+            padding: 0px;
+            height: 100%;
+            width: 100%;
+        }
+
+        .dashed {
+            stroke-dasharray: 5,5;
+        }
+        #chart{
+            height: 100%;
+        }
+    </style>
+</head>
+<body class='with-3d-shadow with-transitions'>
+ 
+<div id="chart">
+    <svg></svg>
+</div>
+
+
+<div id="ouy">
+   
+</div>
+
+
+<script>
+
+    function datai() {
+        var sin = [],cos1 = [],
+            cos = [];
+      
+        for (var i = 0; i < 100; i++) {
+          sin.push({x: i, y: Math.sin(i/10)});
+          cos.push({x: i, y: .5 * Math.cos(i/10)});
+          cos1.push({x: i, y: .5 * Math.cos(i/1)});
+        }
+ 
+        var pop =  [
+          {
+            values: [{x: 1, y: 8},{x: 2, y: 6}],
+            key: 'Sine Wave 11',
+            color: '#ff7f0e'
+          },
+          
+              {
+            values: [{x: 2, y: 10}],
+            key: 'Sine Wave',
+            color: '#ff7f0e'
+          },
+          {
+            values: [{x: 3, y: 5}],
+            key: 'Cosine Wave',
+            color: '#2ca02c'
+          }
+        ];
+        console.log(pop);
+ return pop;
+
+
+
+      }
+
+
+    d3.json('scripts/getGraphData.php', function(error, data) {
+
+        nv.addGraph(function() {
+            var chart = nv.models.lineChart()
+              .useInteractiveGuideline(true)
+              .duration(300)
+
+              ;
+          
+            chart.xAxis
+              .axisLabel('Date')
+              .tickFormat(function(d) {return d3.time.format('%d/%m/%y %H:%M')(new Date(d))});
+              ;
+          
+            chart.yAxis
+              .axisLabel('Valeur')
+              .tickFormat(d3.format('.02f'))
+              ;
+          
+            d3.select('#chart svg')
+              .datum(data)
+              .transition().duration(500)
+              .call(chart)
+              ;
+          
+            nv.utils.windowResize(chart.update);
+          
+            return chart;
+          });
+
+
+
+     //   nv.addGraph(function() {
+     //       var chart = nv.models.stackedAreaChart()
+     //                     .x(function(d) { return d[0] })
+     //                     .y(function(d) { return d[1] })
+     //                     .clipEdge(true)
+     //                     .useInteractiveGuideline(true)
+//
+     //                     ;
+     //     
+     //       chart.xAxis
+     //           .showMaxMin(true)
+     //           .axisLabel('Date')
+//
+//
+     //           .tickFormat(function(d) { return d3.time.format('%m/%d/%y %H:%M')(new Date(d)) });
+     //     
+     //       chart.yAxis
+     //           .axisLabel('Valeur')
+     //           .tickFormat(d3.format(',.2f'));
+     //     
+     //       d3.select('#chart svg')
+     //         .datum(data)
+     //           .transition().duration(500).call(chart);
+     //     
+     //       nv.utils.windowResize(chart.update);
+     //     
+     //       return chart;
+     //     });
+          
+
+
+
+
+    });
+
+
+
+</script>
+</body>
+</html>
